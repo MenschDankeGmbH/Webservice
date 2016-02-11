@@ -772,24 +772,16 @@ class Endpoint implements RepositoryInterface, EventListenerInterface, EventDisp
             return false;
         }
 
+        $data = $resource->extract($this->schema()->columns(), true);
+
         if ($resource->isNew()) {
-            $query = $this->query()->create()->set($resource->toArray());
+            $query = $this->query()->create();
         } else {
             $query = $this->query()->update()->where([
                 $this->primaryKey() => $resource->get($this->primaryKey())
             ]);
-
-            $fieldsToUpdate = [];
-            foreach ($resource->toArray() as $field => $value) {
-                if (!$resource->dirty($field)) {
-                    continue;
-                }
-
-                $fieldsToUpdate[$field] = $value;
-            }
-
-            $query->set($fieldsToUpdate);
         }
+        $query->set($data);
 
         $result = $query->execute();
         if (!$result) {
